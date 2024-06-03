@@ -1,0 +1,11 @@
+x-env-vars: &env-vars
+  env_file:
+    - .env
+
+services:
+  postgres-db:
+    image: "postgres:16-bookworm"
+    restart: always
+    ports:
+      - "5432:5432"
+    <<: *env-vars
