@@ -1,3 +1,5 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import QuerySet
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
@@ -20,7 +22,7 @@ class OwnerEditMixin:
         return super().form_valid(form)
 
 
-class OwnerCourseMixin(OwnerMixin):
+class OwnerCourseMixin(OwnerMixin, LoginRequiredMixin, PermissionRequiredMixin):
     model = Course
     fields = [
         Course.Keys.subject,
@@ -37,6 +39,7 @@ class OwnerCourseEditMixin(OwnerCourseMixin, OwnerEditMixin):
 
 class ManageCourseListView(OwnerCourseMixin, ListView):
     template_name = "courses/manage/course/list.html"
+    permission_required = ["courses.view_course"]
 
     def get_queryset(self) -> QuerySet[Course]:
         queryset = super().get_queryset()
@@ -44,12 +47,13 @@ class ManageCourseListView(OwnerCourseMixin, ListView):
 
 
 class CourseCreateView(OwnerCourseEditMixin, CreateView):
-    pass
+    permission_required = ["courses.add_course"]
 
 
 class CourseUpdateView(OwnerCourseEditMixin, UpdateView):
-    pass
+    permission_required = ["courses.change_course"]
 
 
 class CourseDeleteView(OwnerCourseMixin, DeleteView):
     template_name = "courses/manage/course/delete.html"
+    permission_required = ["courses.delete_course"]
