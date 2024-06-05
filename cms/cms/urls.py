@@ -23,12 +23,14 @@ from django.urls import path
 
 from common.views import CommonLoginView
 from common.views import CommonLogoutView
+from courses.views import CourseListView
 
 urlpatterns = [
     path("accounts/login/", CommonLoginView.as_view(), name="login"),
     path("accounts/logout/", CommonLogoutView.as_view(), name="logout"),
     path("admin/", admin.site.urls),
     path("course/", include("courses.urls")),
+    path("", CourseListView.as_view(), name="course_list"),
 ]
 
 if settings.DEBUG:

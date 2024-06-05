@@ -3,6 +3,7 @@ from braces.views import JsonRequestResponseMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db import models
+from django.db.models import Count
 from django.db.models import QuerySet
 from django.forms import Form
 from django.forms import modelform_factory
@@ -23,6 +24,7 @@ from courses.models import Course
 from courses.models import File
 from courses.models import Image
 from courses.models import Module
+from courses.models import Subject
 from courses.models import Text
 from courses.models import Video
 
@@ -215,3 +217,23 @@ class ContentOrderView(CsrfExemptMixin, JsonRequestResponseMixin, View):
                 order=order
             )
         return self.render_json_response(context_dict=dict(saved="OK"))
+
+
+class CourseListView(TemplateResponseMixin, View):
+    model = Course
+    template_name = "courses/course/list.html"
+
+    def get(self, request, subject: str | None = None) -> TemplateResponse:
+        subjects = Subject.objects.annotate(total_courses=Count(Subject.Keys.courses))
+        courses = Course.objects.annotate(total_modules=Count(Course.Keys.modules))
+        if subject:
+            subject = get_object_or_404(Subject, slug=subject)
+            courses = courses.filter(subject=subject)
+        return self.render_to_response(
+            context=dict(subjects=subjects, courses=courses, subject=subject)
+        )
+
+
+class CourseDetailView(DeleteView):
+    model = Course
+    template_name = "courses/course/detail.html"
