@@ -79,8 +79,9 @@
         method: 'POST',
         mode: 'same-origin',
     };
-    const moduleOrderUrl = '{% url "module_order" %}';
 
+    // Modules
+    const moduleOrderUrl = '{% url "module_order" %}';
     sortable('#modules', {
         forcePlaceholderSize: true,
         placeholderClass: 'placeholder'
@@ -101,5 +102,37 @@
         // send HTTP request
         fetch(moduleOrderUrl, options)
     });
+
+    // Module Contents
+    const contentOrderUrl = '{% url "content_order" %}';
+    sortable('#module-contents', {
+        forcePlaceholderSize: true,
+        placeholderClass: 'placeholder'
+    })[0].addEventListener('sortupdate', function(e) {
+        contentOrder = {};
+        const contents = document.querySelectorAll('#module-contents div');
+        contents.forEach(function (content, index) {
+            // update content index
+            contentOrder[content.dataset.id] = index;
+
+            // add new order to the HTTP request options
+            options['body'] = JSON.stringify(contentOrder);
+        });
+
+        // add new order to the HTTP request options
+        options['body'] = JSON.stringify(contentOrder);
+
+        // send HTTP request
+        fetch(contentOrderUrl, options)
+    });
+
+
+
+
+
+
+
+
+
 
 {% endblock %}
