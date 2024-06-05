@@ -65,3 +65,41 @@
 
     {% endwith %}
 {% endblock %}
+
+{% block include_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5sortable/0.14.0/html5sortable.min.js"
+            integrity="sha512-B/yiMlkxhtHzzJxPa5kNOO/+8cq0Fj4ndMUxVo2kGunCCH8g8XrPnzqg+sOon3hQ8RaEY2YytH+PIseTtfstjg=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+{% endblock %}
+
+
+{% block domready %}
+    const options = {
+        method: 'POST',
+        mode: 'same-origin',
+    };
+    const moduleOrderUrl = '{% url "module_order" %}';
+
+    sortable('#modules', {
+        forcePlaceholderSize: true,
+        placeholderClass: 'placeholder'
+    })[0].addEventListener('sortupdate', function(e) {
+        modulesOrder = {};
+        const modules = document.querySelectorAll('#modules li');
+        modules.forEach(function (module, index) {
+            // update module index
+            modulesOrder[module.dataset.id] = index;
+
+            // update index in HTML element
+            module.querySelector('.order').innerHTML = index + 1;
+        });
+
+        // add new order to the HTTP request options
+        options['body'] = JSON.stringify(modulesOrder);
+
+        // send HTTP request
+        fetch(moduleOrderUrl, options)
+    });
+
+{% endblock %}
