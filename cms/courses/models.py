@@ -42,6 +42,7 @@ class Course(models.Model):
         owner = "owner"
         subject = "subject"
         modules = "modules"
+        students = "students"
 
     title = models.CharField(max_length=256)
     slug = models.SlugField(max_length=256, unique=True)
@@ -54,6 +55,9 @@ class Course(models.Model):
     )
     subject = models.ForeignKey(
         Subject, related_name="courses", on_delete=models.CASCADE
+    )
+    students = models.ManyToManyField(
+        User, related_name="courses_joined", blank=True, null=True
     )
 
     class Meta:

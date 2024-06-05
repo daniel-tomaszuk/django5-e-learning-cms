@@ -17,6 +17,7 @@ from django.views.generic import ListView
 from django.views.generic import UpdateView
 from django.views.generic.base import TemplateResponseMixin
 from django.views.generic.base import View
+from students.forms import CourseEnrollForm
 
 from courses.forms import ModuleFormSet
 from courses.models import Content
@@ -237,3 +238,8 @@ class CourseListView(TemplateResponseMixin, View):
 class CourseDetailView(DeleteView):
     model = Course
     template_name = "courses/course/detail.html"
+
+    def get_context_data(self, **kwargs) -> dict:
+        context: dict = super().get_context_data(**kwargs)
+        context["enroll_form"] = CourseEnrollForm(initial=dict(course=self.object))
+        return context
