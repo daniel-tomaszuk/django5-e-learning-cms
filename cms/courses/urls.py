@@ -1,8 +1,6 @@
 from django.urls import path
 
 from courses import views
-from courses.views import ContentCreateUpdateView
-from courses.views import ContentDeleteView
 
 urlpatterns = [
     path("mine/", views.ManageCourseListView.as_view(), name="manage_course_list"),
@@ -16,17 +14,22 @@ urlpatterns = [
     ),
     path(
         "module/<int:module_id>/content/<str:model_name>/create/",
-        ContentCreateUpdateView.as_view(),
+        views.ContentCreateUpdateView.as_view(),
         name="module_content_create",
     ),
     path(
         "module/<int:module_id>/content/<str:model_name>/<int:id>/",
-        ContentCreateUpdateView.as_view(),
+        views.ContentCreateUpdateView.as_view(),
         name="module_content_update",
     ),
     path(
         "content/<int:id>/delete/",
-        ContentDeleteView.as_view(),
+        views.ContentDeleteView.as_view(),
         name="module_content_delete",
+    ),
+    path(
+        "module/<int:module_id>/",
+        views.ModuleContentListView.as_view(),
+        name="module_content_list",
     ),
 ]
