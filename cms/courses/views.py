@@ -2,6 +2,7 @@ from braces.views import CsrfExemptMixin
 from braces.views import JsonRequestResponseMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.core.cache import cache
 from django.db import models
 from django.db.models import Count
 from django.db.models import QuerySet
@@ -221,15 +222,47 @@ class ContentOrderView(CsrfExemptMixin, JsonRequestResponseMixin, View):
 
 
 class CourseListView(TemplateResponseMixin, View):
+    CACHE_SUBJECTS_KEY = "courses:all_subjects"
+    CACHE_SUBJECTS_TIMEOUT_SECONDS = 60 * 60
+
+    CACHE_SUBJECT_COURSES_KEY = "courses:subject:{subject_id}"
+    CACHE_SUBJECTS_COURSES_TIMEOUT_SECONDS = 60
+
+    CACHE_ALL_COURSES_KEY = "courses:all_courses"
+    CACHE_ALL_COURSES_TIMEOUT_SECONDS = 60
+
     model = Course
     template_name = "courses/course/list.html"
 
     def get(self, request, subject: str | None = None) -> TemplateResponse:
-        subjects = Subject.objects.annotate(total_courses=Count(Subject.Keys.courses))
-        courses = Course.objects.annotate(total_modules=Count(Course.Keys.modules))
+        subjects = cache.get(self.CACHE_SUBJECTS_KEY)
+        if not subjects:
+            subjects = Subject.objects.annotate(
+                total_courses=Count(Subject.Keys.courses)
+            )
+            cache.set(
+                self.CACHE_SUBJECTS_KEY, subjects, self.CACHE_SUBJECTS_TIMEOUT_SECONDS
+            )
+
+        all_courses = Course.objects.annotate(total_modules=Count(Course.Keys.modules))
         if subject:
             subject = get_object_or_404(Subject, slug=subject)
-            courses = courses.filter(subject=subject)
+            subject_key: str = self.CACHE_SUBJECT_COURSES_KEY.format(
+                subject_id=subject.id
+            )
+            courses = cache.get(subject_key)
+            if not courses:
+                courses = all_courses.filter(subject=subject)
+                cache.set(self.CACHE_SUBJECT_COURSES_KEY, courses)
+        else:
+            courses = cache.get(self.CACHE_ALL_COURSES_KEY)
+            if not courses:
+                courses = all_courses
+                cache.set(
+                    self.CACHE_ALL_COURSES_KEY,
+                    courses,
+                    self.CACHE_ALL_COURSES_TIMEOUT_SECONDS,
+                )
         return self.render_to_response(
             context=dict(subjects=subjects, courses=courses, subject=subject)
         )

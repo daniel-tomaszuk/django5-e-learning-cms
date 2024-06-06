@@ -9,3 +9,9 @@ services:
     ports:
       - "5432:5432"
     <<: *env-vars
+
+  memcache:
+    image: memcached:bookworm
+    restart: always
+    ports:
+      - "11211:11211"
