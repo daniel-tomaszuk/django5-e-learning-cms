@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "embed_video",
     "debug_toolbar",
+    "rest_framework",
     "courses",
     "students",
 ]
@@ -152,4 +153,11 @@ CACHES = {
         "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
         "LOCATION": "0.0.0.0:11211",  # should be in env variable for prod config
     }
+}
+
+# DRF Settings
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly",
+    ]
 }
