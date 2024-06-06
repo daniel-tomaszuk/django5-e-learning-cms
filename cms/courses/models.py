@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.template.loader import render_to_string
 
 from courses.fields import OrderField
 
@@ -144,6 +145,14 @@ class ItemBase(models.Model):
 
     def __str__(self) -> str:
         return str(self.title)
+
+    def render(self):
+        """
+        Returns given item dedicated HTML that should be displayed
+        """
+        return render_to_string(
+            f"courses/content/{self._meta.model_name}.html", context=dict(item=self)
+        )
 
 
 class Text(ItemBase):
