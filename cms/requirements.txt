@@ -5,6 +5,7 @@ charset-normalizer==3.3.2
 distlib==0.3.8
 Django==5.0.6
 django-braces==1.15.0
+django-debug-toolbar==4.4.2
 django-embed-video==1.4.10
 filelock==3.14.0
 identify==2.5.36
@@ -17,6 +18,7 @@ platformdirs==4.2.2
 pluggy==1.5.0
 pre-commit==3.7.1
 psycopg==3.1.19
+pymemcache==4.0.0
 pytest==8.2.1
 pytest-django==4.8.0
 python-decouple==3.8
