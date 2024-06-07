@@ -10,7 +10,9 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from courses.api.pagination import StandardPagination
+from courses.api.permissions import IsEnrolled
 from courses.api.serializers import CourseSerializer
+from courses.api.serializers import CourseWithContentSerializer
 from courses.api.serializers import SubjectSerializer
 from courses.models import Course
 from courses.models import Subject
@@ -53,6 +55,16 @@ class CourseViewSet(ReadOnlyModelViewSet):
         course: Course = self.get_object()
         course.students.add(request.user)
         return Response()
+
+    @action(
+        detail=True,
+        methods=["get"],
+        serializer_class=CourseWithContentSerializer,
+        authentication_classes=[BasicAuthentication],
+        permission_classes=[IsAuthenticated, IsEnrolled],
+    )
+    def contents(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
 
 
 class CourseEnrollView(APIView):
