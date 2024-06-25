@@ -1,3 +1,6 @@
+import contextlib
+import json
+
 from braces.views import CsrfExemptMixin
 from braces.views import JsonRequestResponseMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -8,10 +11,15 @@ from django.db.models import Count
 from django.db.models import QuerySet
 from django.forms import Form
 from django.forms import modelform_factory
+from django.http import Http404
+from django.http import HttpRequest
+from django.http import HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.urls import reverse_lazy
+from django.views.decorators.http import require_http_methods
 from django.views.generic import CreateView
 from django.views.generic import DeleteView
 from django.views.generic import ListView
@@ -26,6 +34,7 @@ from courses.models import Course
 from courses.models import File
 from courses.models import Image
 from courses.models import Module
+from courses.models import Product
 from courses.models import Subject
 from courses.models import Text
 from courses.models import Video
@@ -64,6 +73,8 @@ class ManageCourseListView(OwnerCourseMixin, ListView):
 
     def get_queryset(self) -> QuerySet[Course]:
         queryset = super().get_queryset()
+
+        raise Http404
         return queryset.filter(owner=self.request.user)
 
 
@@ -276,3 +287,36 @@ class CourseDetailView(DeleteView):
         context: dict = super().get_context_data(**kwargs)
         context["enroll_form"] = CourseEnrollForm(initial=dict(course=self.object))
         return context
+
+
+def validate_budget(budget):
+    with contextlib.suppress(ValueError, TypeError):
+        return int(budget)
+    return None
+
+
+def shopping(request: HttpRequest) -> HttpResponse:
+    budget: str | None = request.GET.get("budget", None)
+    budget: int | None = validate_budget(budget)
+    if budget is None:
+        return HttpResponse(status=404)
+
+    products = list(Product.objects.all().order_by("price"))
+
+    total_cost = 0
+    products_to_buy = {}
+    # assuming products are ordered from lowest to highest price
+    for product in products:
+        max_quantity_to_buy = (
+            # we can buy cheapest product if we can,
+            # otherwise buy as much as budget allows
+            min(product.quantity, (budget - total_cost) // product.price)
+        )
+        total_cost += max_quantity_to_buy * product.price
+        if total_cost > budget:
+            break
+
+        if max_quantity_to_buy:
+            products_to_buy[product.name] = int(max_quantity_to_buy)
+
+    return JsonResponse(products_to_buy)

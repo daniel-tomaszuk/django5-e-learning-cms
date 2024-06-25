@@ -210,3 +210,9 @@ class Video(ItemBase):
         url = "url"
 
     url = models.URLField()
+
+
+class Product(models.Model):
+    name = models.CharField(max_length=15, primary_key=True)
+    price = models.IntegerField()
+    quantity = models.IntegerField()

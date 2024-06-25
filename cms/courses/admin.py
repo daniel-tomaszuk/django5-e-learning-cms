@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from courses.models import Course
 from courses.models import Module
+from courses.models import Product
 from courses.models import Subject
 
 
@@ -9,6 +10,11 @@ from courses.models import Subject
 class SubjectAdmin(admin.ModelAdmin):
     list_display = [Subject.Keys.title, Subject.Keys.slug]
     prepopulated_fields = {Subject.Keys.slug: (Subject.Keys.title,)}
+
+
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ["name", "quantity", "price"]
 
 
 class ModuleInLine(admin.StackedInline):
